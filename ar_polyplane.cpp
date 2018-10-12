@@ -27,7 +27,9 @@ struct PolyPlane
 
     AtNode * disp_map;
     float  disp_height;
-    float  disp_zero_level;
+    float  disp_zero_value;
+    float  disp_padding;
+
     int num_vertices;
     AtNode * node;
 };
@@ -40,11 +42,12 @@ node_parameters
     AiParameterInt("divisions", 2);
 
     AiParameterEnum("subdiv_type", 0, enum_subdiv);
-    AiParameterInt("subdiv_iterations", 1);
+    AiParameterByte("subdiv_iterations", 1);
 
     AiParameterNode("disp_map", NULL);
-    AiParameterFlt("disp_zero_level", 0);
+    AiParameterFlt("disp_zero_value", 0);
     AiParameterFlt("disp_height", 1);
+    AiParameterFlt("disp_padding", 0);
 }
 
 procedural_init
@@ -56,13 +59,14 @@ procedural_init
     plane->divisions            = AiNodeGetInt(node, "divisions");
 
     plane->subdiv_type          = AiNodeGetInt(node, "subdiv_type");
-    plane->subdiv_iterations    = AiNodeGetInt(node, "subdiv_iterations");
+    plane->subdiv_iterations    = AiNodeGetByte(node, "subdiv_iterations");
 
     plane->disp_map             = static_cast<AtNode*>(AiNodeGetPtr(node, "disp_map"));
     plane->disp_height          = AiNodeGetFlt(node, "disp_height");
-    plane->disp_zero_level      = AiNodeGetFlt(node, "disp_zero_level");
+    plane->disp_zero_value      = AiNodeGetFlt(node, "disp_zero_value");
+    plane->disp_padding         = AiNodeGetFlt(node, "disp_padding");
 
-    plane->num_vertices = pow(plane->divisions+1, 2);
+    plane->num_vertices         = pow(plane->divisions+1, 2);
 
 
     std::vector<unsigned char> nsides;
@@ -141,10 +145,16 @@ procedural_init
          plane->subdiv_type
          );
 
-    AiNodeSetInt(
+    AiNodeSetByte(
          mesh_node,
          "subdiv_iterations",
          plane->subdiv_iterations
+         );
+
+    AiNodeSetBool(
+         mesh_node,
+         "smoothing",
+         true
          );
 
     // displacement
@@ -165,8 +175,14 @@ procedural_init
 
         AiNodeSetFlt(
              mesh_node,
-             "disp_zero_level",
-             plane->disp_height
+             "disp_zero_value",
+             plane->disp_zero_value
+             );
+
+        AiNodeSetFlt(
+             mesh_node,
+             "disp_padding",
+             plane->disp_padding
              );
     }
 
