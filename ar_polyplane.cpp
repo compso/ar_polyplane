@@ -17,6 +17,21 @@ const char* enum_subdiv[] =
    NULL
 };
 
+const char* enum_adaptive[] =
+{
+   "auto",
+   "edge_length",
+   "flatness",
+   NULL
+};
+
+const char* enum_adaptive_space[] =
+{
+   "raster",
+   "object",
+   NULL
+};
+
 struct PolyPlane
 {
     float   width;
@@ -24,6 +39,9 @@ struct PolyPlane
 
     int subdiv_type;
     int subdiv_iterations;
+    float subdiv_adaptive_error;
+    int subdiv_adaptive_metric;
+    int subdiv_adaptive_space;
 
     AtNode * disp_map;
     float  disp_height;
@@ -43,6 +61,9 @@ node_parameters
 
     AiParameterEnum("subdiv_type", 0, enum_subdiv);
     AiParameterByte("subdiv_iterations", 1);
+    AiParameterFlt("subdiv_adaptive_error", 0);
+    AiParameterEnum("subdiv_adaptive_metric", 0, enum_adaptive);
+    AiParameterEnum("subdiv_adaptive_space", 0, enum_adaptive_space);
 
     AiParameterNode("disp_map", NULL);
     AiParameterFlt("disp_zero_value", 0);
@@ -55,18 +76,21 @@ procedural_init
     PolyPlane *plane = new PolyPlane();
     *user_ptr = plane;
 
-    plane->width                = AiNodeGetFlt(node, "width");
-    plane->divisions            = AiNodeGetInt(node, "divisions");
+    plane->width                    = AiNodeGetFlt(node, "width");
+    plane->divisions                = AiNodeGetInt(node, "divisions");
 
-    plane->subdiv_type          = AiNodeGetInt(node, "subdiv_type");
-    plane->subdiv_iterations    = AiNodeGetByte(node, "subdiv_iterations");
+    plane->subdiv_type              = AiNodeGetInt(node, "subdiv_type");
+    plane->subdiv_iterations        = AiNodeGetByte(node, "subdiv_iterations");
+    plane->subdiv_adaptive_error    = AiNodeGetFlt(node, "subdiv_adaptive_error");
+    plane->subdiv_adaptive_metric   = AiNodeGetFlt(node, "subdiv_adaptive_metric");
+    plane->subdiv_adaptive_space    = AiNodeGetFlt(node, "subdiv_adaptive_space");
 
-    plane->disp_map             = static_cast<AtNode*>(AiNodeGetPtr(node, "disp_map"));
-    plane->disp_height          = AiNodeGetFlt(node, "disp_height");
-    plane->disp_zero_value      = AiNodeGetFlt(node, "disp_zero_value");
-    plane->disp_padding         = AiNodeGetFlt(node, "disp_padding");
+    plane->disp_map                 = static_cast<AtNode*>(AiNodeGetPtr(node, "disp_map"));
+    plane->disp_height              = AiNodeGetFlt(node, "disp_height");
+    plane->disp_zero_value          = AiNodeGetFlt(node, "disp_zero_value");
+    plane->disp_padding             = AiNodeGetFlt(node, "disp_padding");
 
-    plane->num_vertices         = pow(plane->divisions+1, 2);
+    plane->num_vertices             = pow(plane->divisions+1, 2);
 
 
     std::vector<unsigned char> nsides;
@@ -90,11 +114,7 @@ procedural_init
         nsides.push_back(4);
     }
 
-    AiNodeSetArray(
-         mesh_node,
-         "nsides",
-         AiArrayConvert(nsides.size(), 1, AI_TYPE_BYTE, nsides.data())
-         );
+    AiNodeSetArray(mesh_node,"nsides",AiArrayConvert(nsides.size(), 1, AI_TYPE_BYTE, nsides.data()));
 
     // vidxs
     int a = 0;
@@ -113,11 +133,7 @@ procedural_init
         a = v+1;
     }
 
-    AiNodeSetArray(
-         mesh_node,
-         "vidxs",
-         AiArrayConvert(vidxs.size(), 1, AI_TYPE_UINT, vidxs.data())
-         );
+    AiNodeSetArray(mesh_node,"vidxs",AiArrayConvert(vidxs.size(), 1, AI_TYPE_UINT, vidxs.data()));
 
     // vlist
     for (int d = 0; d <= plane->divisions; ++d)
@@ -132,58 +148,23 @@ procedural_init
         }
     }
 
-    AiNodeSetArray(
-         mesh_node,
-         "vlist",
-         AiArrayConvert(vlist.size(), 1, AI_TYPE_FLOAT, vlist.data())
-         );
+    AiNodeSetArray(mesh_node,"vlist",AiArrayConvert(vlist.size(), 1, AI_TYPE_FLOAT, vlist.data()));
 
     // subdiv
-    AiNodeSetInt(
-         mesh_node,
-         "subdiv_type",
-         plane->subdiv_type
-         );
-
-    AiNodeSetByte(
-         mesh_node,
-         "subdiv_iterations",
-         plane->subdiv_iterations
-         );
-
-    AiNodeSetBool(
-         mesh_node,
-         "smoothing",
-         true
-         );
+    AiNodeSetBool(mesh_node, "smoothing", true);
+    AiNodeSetInt(mesh_node, "subdiv_type", plane->subdiv_type);
+    AiNodeSetByte(mesh_node, "subdiv_iterations", plane->subdiv_iterations);
+    AiNodeSetFlt(mesh_node, "subdiv_adaptive_error", plane->subdiv_adaptive_error);
+    AiNodeSetInt(mesh_node, "subdiv_adaptive_metric", plane->subdiv_adaptive_metric);
+    AiNodeSetInt(mesh_node, "subdiv_adaptive_space", plane->subdiv_adaptive_space);
 
     // displacement
     if (plane->disp_map != nullptr)
     {
-
-        AiNodeSetPtr(
-             mesh_node,
-             "disp_map",
-             plane->disp_map
-             );
-
-        AiNodeSetFlt(
-             mesh_node,
-             "disp_height",
-             plane->disp_height
-             );
-
-        AiNodeSetFlt(
-             mesh_node,
-             "disp_zero_value",
-             plane->disp_zero_value
-             );
-
-        AiNodeSetFlt(
-             mesh_node,
-             "disp_padding",
-             plane->disp_padding
-             );
+        AiNodeSetPtr(mesh_node,"disp_map",plane->disp_map);
+        AiNodeSetFlt(mesh_node,"disp_height",plane->disp_height);
+        AiNodeSetFlt(mesh_node,"disp_zero_value",plane->disp_zero_value);
+        AiNodeSetFlt(mesh_node,"disp_padding",plane->disp_padding);
     }
 
     return true;
