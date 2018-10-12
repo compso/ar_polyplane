@@ -1,0 +1,87 @@
+### exported: Wed Oct 10 10:31:22 2018
+### from:     Arnold 5.1.1.2 [73211a44] linux clang-5.0.0 oiio-1.7.17 osl-1.9.0 vdb-4.0.0 clm-1.0.3.513 rlm-12.2.2 2018/07/24 09:25:51
+### host app: MtoA 3.0.1.1 443e943e (master) Maya 2018
+### bounds: -0.5 0 -0.5 0.5 0 0.5
+### user: handsca
+### render_layer: defaultRenderLayer
+
+
+
+options
+{
+ AA_samples 3
+ AA_samples_max 8
+ outputs "RGBA RGBA defaultArnoldFilter@gaussian_filter defaultArnoldDriver@driver_exr.RGBA"
+ xres 960
+ yres 540
+ texture_per_file_stats on
+ texture_searchpath "/home/handsca/maya/projects/default/sourceimages"
+ texture_automip off
+ camera "|persp|perspShape"
+ frame 1
+ procedural_searchpath ""
+ GI_diffuse_depth 1
+ GI_specular_depth 1
+ GI_transmission_depth 8
+ declare render_layer constant STRING
+ render_layer "defaultRenderLayer"
+}
+
+gaussian_filter
+{
+ name defaultArnoldFilter@gaussian_filter
+}
+
+driver_exr
+{
+ name defaultArnoldDriver@driver_exr.RGBA
+ filename "plane.exr"
+ color_space ""
+}
+
+persp_camera
+{
+ name |persp|perspShape
+ matrix
+ 0.707106769 0 -0.707106769 0
+ -0.331294566 0.883452237 -0.331294566 0
+ 0.624695063 0.468521297 0.624695063 0
+ 28 21 28 1
+ near_clip 0.100000001
+ far_clip 10000
+ screen_window_min -1 -1
+ screen_window_max 1 1
+ shutter_start 0
+ shutter_end 0
+ shutter_type "box"
+ rolling_shutter "off"
+ rolling_shutter_duration 0
+ motion_start 0
+ motion_end 0
+ exposure 0
+ fov 54.4322243
+ declare dcc_name constant STRING
+ dcc_name "perspShape"
+}
+
+ar_polyplane
+{
+    name testplane
+    shader "utility1"
+    divisions 4
+    subdiv_type "catclark"
+    subdiv_iterations 3
+    disp_map "noise1"
+}
+
+utility
+{
+ name utility1
+ overlay_mode "polywire"
+}
+
+cell_noise
+{
+    name noise1
+}
+
