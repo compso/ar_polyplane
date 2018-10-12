@@ -47,6 +47,7 @@ struct PolyPlane
     float  disp_height;
     float  disp_zero_value;
     float  disp_padding;
+    bool  disp_autobump;
 
     int num_vertices;
     AtNode * node;
@@ -69,6 +70,7 @@ node_parameters
     AiParameterFlt("disp_zero_value", 0);
     AiParameterFlt("disp_height", 1);
     AiParameterFlt("disp_padding", 0);
+    AiParameterBool("disp_autobump", false);
 }
 
 procedural_init
@@ -89,6 +91,7 @@ procedural_init
     plane->disp_height              = AiNodeGetFlt(node, "disp_height");
     plane->disp_zero_value          = AiNodeGetFlt(node, "disp_zero_value");
     plane->disp_padding             = AiNodeGetFlt(node, "disp_padding");
+    plane->disp_autobump             = AiNodeGetBool(node, "disp_autobump");
 
     plane->num_vertices             = pow(plane->divisions+1, 2);
 
@@ -165,6 +168,7 @@ procedural_init
         AiNodeSetFlt(mesh_node,"disp_height",plane->disp_height);
         AiNodeSetFlt(mesh_node,"disp_zero_value",plane->disp_zero_value);
         AiNodeSetFlt(mesh_node,"disp_padding",plane->disp_padding);
+        AiNodeSetBool(mesh_node,"disp_autobump",plane->disp_autobump);
     }
 
     return true;
