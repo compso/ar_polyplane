@@ -67,21 +67,39 @@ persp_camera
 ar_polyplane
 {
     name testplane
+    visibility 0
     shader "utility1"
+    width 200
     divisions 4
     subdiv_type "catclark"
-    subdiv_iterations 3
+    subdiv_iterations 15
+    subdiv_adaptive_error 5
     disp_map "noise1"
+    disp_height 1
+    disp_zero_value 0
+    disp_padding 1
+    disp_autobump off
+}
+
+ginstance
+{
+    name proc_instance
+    visibility 255
+    shader "utility1"
+    node "testplane"
 }
 
 utility
 {
  name utility1
- overlay_mode "polywire"
+ shade_mode "ambocc"
 }
 
 cell_noise
 {
-    name noise1
+ name noise1
+ pattern "cell2"
+ octaves 4
+ lacunarity 0.5
+ amplitude 10
 }
-
